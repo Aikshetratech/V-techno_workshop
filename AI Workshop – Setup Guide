@@ -1,0 +1,100 @@
+🤖 AI Workshop – Setup Guide
+
+Instructor: Dhyan A
+Organization: Aikshetra Tech Solutions
+Tagline: Empowering Innovation through AI & Automation
+
+⸻
+
+🧩 1. What You Need (Before the Workshop)
+
+Tool / Account	Why You Need It	Link
+Gmail Account	Used for Google Cloud and Gmail API.	Create Gmail￼
+GitHub Account	To get shared project files.	Create GitHub￼
+Telegram Desktop	To chat with your bot and see results.	Download Telegram￼
+Docker	To run n8n (automation app).	Download Docker￼
+
+
+⸻
+
+⚙️ 2. Setting Up Docker and n8n
+	1.	Install Docker Desktop.
+	2.	Check if it’s working:
+
+docker --version
+
+
+	3.	Download n8n:
+
+docker pull n8nio/n8n:latest
+
+
+	4.	Run n8n:
+
+docker run -it --rm -p 5678:5678 -v ~/.n8n:/home/node/.n8n n8nio/n8n
+
+
+	5.	Open your browser and go to 👉 http://localhost:5678￼
+
+⸻
+
+🔑 3. Get Your API Keys
+
+🧠 Google Gemini API Key
+	•	Visit Google Makersuite￼
+	•	Copy your Gemini API Key.
+
+💬 Telegram API Key
+	•	Open Telegram → Search @BotFather → Create a new bot.
+	•	Copy your API Token and save it safely.
+
+📧 Gmail API Key
+	•	Go to Google Cloud Console￼
+	•	Enable Gmail API → Create OAuth 2.0 Client ID → Download credentials.
+
+⸻
+
+🌐 4. Setup ngrok (for Webhooks)
+	1.	Go to ngrok.com￼ and sign up.
+	2.	Install ngrok.
+	3.	Connect it:
+
+ngrok config add-authtoken <your_auth_token>
+
+
+	4.	Run it:
+
+ngrok http 5678
+
+
+	5.	Copy the Forwarding URL (example: https://xyz.ngrok.io) — you’ll need this in n8n.
+
+⸻
+
+⚡ 5. How the Project Works
+	1.	You send a Telegram message (example:
+“Show unread Amazon invoice emails after 1 June 2025.”)
+	2.	The AI (Gemini) understands your message and turns it into a Gmail search query.
+	3.	n8n fetches matching emails using Gmail API.
+	4.	Emails are summarized (date, sender, subject).
+	5.	Telegram bot sends the results back to you — one message per email.
+
+⸻
+
+💡 6. Why This Is Useful
+
+✅ Saves time – No need to open Gmail manually.
+✅ AI helps you find the right info easily.
+✅ Simple, no coding required.
+✅ Works free with your own accounts.
+
+⸻
+
+🏁 Done!
+
+You’re ready to start the AI Automation Workshop 🎯
+We’ll now connect everything and test it in action.
+
+
+
+Would you like me to make a short printable version (1-page) for students to keep during the session?
