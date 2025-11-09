@@ -1,0 +1,458 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Convert this email search request into a valid Gmail search query. Output ONLY JSON with:\n1. \"search\": The complete Gmail query using operators (from:, subject:, after:, etc.)\n2. \"metadata\": Extracted components for reference\n\nRules:\n- Use exact Gmail search syntax\n- Convert dates to YYYY/MM/DD or newer_than/older_than\n- Group related terms with (parentheses)\n- Prioritize exact matches with \"quotes\"\n- Include multiple variations of keywords (e.g., invoice/invoices)\n\nExample Output:\n```json\n{\n  \"search\": \"from:amazon AND (invoice OR invoices) AND after:2024/06/01\",\n  \"metadata\": {\n    \"senders\": [\"amazon\"],\n    \"keywords\": [\"invoice\", \"invoices\"],\n    \"timeFilters\": {\"after\": \"2024/06/01\"}\n  }\n}\n\nUser Input: {{ $('User Request - Telegram Trigger').item.json.message.text }}",
+        "hasOutputParser": true
+      },
+      "id": "86963f00-de60-438b-ad22-db8ce75daf10",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "maxTries": 2,
+      "position": [
+        -64,
+        320
+      ],
+      "executeOnce": false,
+      "retryOnFail": true,
+      "typeVersion": 1.6,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "id": "80c8f9c8-dc04-4a13-b35d-a29f60a9e04d",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        48,
+        656
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "id": "20ef4c37-d261-4e6c-a2ab-04506a74ab94",
+      "name": "Google Gemini Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        864,
+        528
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Convert this email data into a well-formatted Telegram message with these sections:\n1. 📅 Date (DD/MM/YYYY format)\n2. 👤 Sender (extract name & email)\n3. 📌 Subject\n4. ✂️ Preview (full snippet)\n\nRules:\n- Use emojis for visual separation\n- Keep entire message under 400 characters\n- Format dates as \"09/06/2025\"\n- Extract names from \"From\" field (remove quotes/email)\n- Full snippets that conveys the full summarised email (max 4 lines)\n\nExample Output:\n📅Date:  09/06/2025  \n👤Sender: elad malka (example@gmail.com)\n📌Subject Line: Share request for \"Acuity to Sheets\"  \n✂️Snippet: Requesting access to spreadsheet: Acuity to Sheets \n\nEmail Data: \ndate: {{ $json.Date }}\nfrom: {{ $json.From }}\nsubject: {{ $json.Subject }}\nsender: {{ $json.snippet }}",
+        "hasOutputParser": true
+      },
+      "id": "e5cfe22f-af0c-4949-8bdd-1cf08667c818",
+      "name": "Basic LLM Chain1",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        912,
+        320
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the user's request (User request:{{ $json.message.text }} )  about fetching Gmail emails and output a JSON with:\n1. `sender` (name or email, if specified).\n2. `keywords` (list of words/phrases to search for).\n3. `afterDate` (ISO format: YYYY-MM-DD, ONLY if user specifies \"after [date]\" or \"since [date]\").\n4. `beforeDate` (ISO format: YYYY-MM-DD, ONLY if user specifies \"before [date]\" or \"until [date]\").\n\nRules:\n- Convert relative dates (e.g., \"since Monday\") to ISO format using TODAY as reference.\n- For ambiguous dates (e.g., \"last week\"), use the afterDate (calculated from present date to last 7 days).\n- Strictly return ONLY valid JSON.\n\nExamples:\n\nUser Input: \"Get emails from Amazon after 2024-06-10 about returns\"\nOutput:\n```json\n{\n  \"sender\": \"Amazon\",\n  \"keywords\": [\"returns\"],\n  \"afterDate\": \"2024-06-10\"\n} ",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "id": "43acabe1-d0fa-4f66-aca5-543105ddc639",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -624,
+        320
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "id": "72bb43c3-77a6-4279-9620-3ea0d667d750",
+      "name": "Google Gemini Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        -576,
+        656
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"sender\": \"Amazon\",\n  \"keywords\": [\"returns\"],\n  \"afterDate\": \"2024-06-10\",\n  \"beforeDate\": \"2024-06-30\"\n} "
+      },
+      "id": "2a4d1366-6d65-49d1-97b4-d6dab5384aef",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        -320,
+        656
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"search\": \"from:amazon AND (invoice OR invoices) AND after:2024/06/01\",\n  \"metadata\": {\n    \"senders\": [\"amazon\"],\n    \"keywords\": [\"invoice\", \"invoices\"],\n    \"timeFilters\": {\"after\": \"2024/06/01\"}\n  }\n}"
+      },
+      "id": "521e890b-6fcb-49e3-8f05-84e2f8657965",
+      "name": "Structured Output Parser1",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        304,
+        656
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"text\": \"📅Date: 09/06/2025\\n👤Sender: elad malka (drive-shares-dm-noreply@google.com)\\n📌Subject: Share request for \"\n}"
+      },
+      "id": "3ae10fe7-c540-4c1b-8bc6-07ee72c35fd6",
+      "name": "Structured Output Parser2",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        1104,
+        560
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "2cc232e3-99f7-403b-b58b-93ad224e7315",
+      "name": "User Request - Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        -928,
+        320
+      ],
+      "webhookId": "6eae6ee1-b07e-4b7b-af8f-a79a6755fd93",
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "93d9bf21-89b5-4544-80db-ed0cc875cb5c",
+              "name": "Sender",
+              "type": "string",
+              "value": "={{ $json.output.sender }}"
+            },
+            {
+              "id": "933fae65-1251-4995-be9a-03691e30d1c7",
+              "name": "Keywords/Prompt/Criteria",
+              "type": "string",
+              "value": "={{ $json.output.keywords }}"
+            },
+            {
+              "id": "bf4c646a-5b8e-49a3-a1a2-68836c731404",
+              "name": "afterDate",
+              "type": "string",
+              "value": "={{ $json.output.afterDate }}"
+            },
+            {
+              "id": "2a91fd77-77e9-4c3f-8f30-17a97fb9871d",
+              "name": "beforeDate",
+              "type": "string",
+              "value": "={{ $json.output.beforeDate }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a97004d0-8bbb-4016-953c-dd3f63a205ea",
+      "name": "Set Parameters From User Request (for fetching emails)",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -256,
+        320
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 10,
+        "filters": {
+          "q": "={{ $json.output.search }}",
+          "readStatus": "unread",
+          "receivedAfter": "={{ $('Set Parameters From User Request (for fetching emails)').item.json.afterDate }}",
+          "receivedBefore": "={{ $('Set Parameters From User Request (for fetching emails)').item.json.beforeDate }}",
+          "sender": "={{ $('Set Parameters From User Request (for fetching emails)').item.json.Sender }}"
+        }
+      },
+      "id": "bdcb56b1-31d6-4ffc-a5d7-bdb39768ea13",
+      "name": "Gets Requested Email(s)",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        432,
+        320
+      ],
+      "webhookId": "ac0ae124-5b2e-473c-9716-473110d3c121",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7e8b9cac-da96-4568-b520-8f64bed8b35b",
+              "name": "Date",
+              "type": "string",
+              "value": "={{ new Date(Number($json.internalDate)).toISOString() }}"
+            },
+            {
+              "id": "6a422a1c-395c-4759-b642-40b33295b8d1",
+              "name": "From",
+              "type": "string",
+              "value": "={{ $json.From }}"
+            },
+            {
+              "id": "85b67fb6-f4ed-4672-becd-43aa682c5cdf",
+              "name": "Subject",
+              "type": "string",
+              "value": "={{ $json.Subject }}"
+            },
+            {
+              "id": "9b4fa0e0-da5a-4c3a-a049-ec1c2ac9c600",
+              "name": "snippet",
+              "type": "string",
+              "value": "={{ $json.snippet }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f2affdaf-cfdf-44e7-87ec-6ef5a132d3c1",
+      "name": "Sets Parameters For Response",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        720,
+        320
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('User Request - Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "7a92cca8-465a-4d50-b9b0-90c041eca1ee",
+      "name": "Sends (requested emails) via Telegram back",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1392,
+        320
+      ],
+      "webhookId": "aad6a23e-6d2a-4a74-b1ec-addc668033e1",
+      "typeVersion": 1.2
+    }
+  ],
+  "pinData": {
+    "User Request - Telegram Trigger": [
+      {
+        "json": {
+          "message": {
+            "chat": {
+              "id": 6305257849,
+              "type": "private",
+              "username": "ToooooopGG",
+              "last_name": "Tate",
+              "first_name": "Andrew"
+            },
+            "date": 1750328451,
+            "from": {
+              "id": 6305257849,
+              "is_bot": false,
+              "username": "ToooooopGG",
+              "last_name": "Tate",
+              "first_name": "Andrew",
+              "language_code": "en"
+            },
+            "text": "Hey get me summary of all the emails by elevenlabs",
+            "message_id": 15
+          },
+          "update_id": 216173590
+        }
+      }
+    ]
+  },
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Set Parameters From User Request (for fetching emails)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Gets Requested Email(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Sends (requested emails) via Telegram back",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gets Requested Email(s)": {
+      "main": [
+        [
+          {
+            "node": "Sets Parameters For Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sets Parameters For Response": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Request - Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Parameters From User Request (for fetching emails)": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "",
+  "meta": {
+    "instanceId": "2c9239c989c67f6fd793e9167bd2ea4829d41009e9d5f3eb8d44eb32050a19e0"
+  },
+  "tags": []
+}
