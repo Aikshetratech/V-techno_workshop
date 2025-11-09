@@ -14,6 +14,14 @@ GitHub Account	To get shared project files.	Create GitHub￼
 Telegram Desktop	To chat with your bot and see results.	Download Telegram￼
 Docker	To run n8n (automation app).	Download Docker￼
 
+Setup Instructions:
+
+Create a Telegram Bot: Use @BotFather on Telegram to create a bot and obtain the API token.
+Connect Telegram to n8n: Add your bot’s API token as a credential in n8n.
+Connect Gmail Account: Authorize your Gmail account in n8n, set email limits, and choose read/unread status preferences.
+Configure AI Model: Use your own Google Gemini or OpenAI API key, or select a preferred LLM node in the workflow.
+Deploy the Workflow: Activate the workflow and start messaging your Telegram bot to retrieve emails instantly.
+
 
 ⸻
 
@@ -29,9 +37,14 @@ docker --version
 docker pull n8nio/n8n:latest
 
 
-	4.	Run n8n:
+	4.	Run n8n: 
+		[ To Create and Run Container - But Container Destorys Automatically ] 
 
 docker run -it --rm -p 5678:5678 -v ~/.n8n:/home/node/.n8n n8nio/n8n
+
+		[ To Create and Run Container - To save all your workflows permanently ] 
+
+docker run -it -d --name n8n -p 5678:5678 -v ~/.n8n:/home/node/.n8n n8nio/n8n
 
 
 	5.	Open your browser and go to 👉 http://localhost:5678￼
